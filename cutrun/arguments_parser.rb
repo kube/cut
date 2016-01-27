@@ -15,17 +15,17 @@ module ArgumentsParser
   end
 
   def self.get_flag_name arg
-    arg.start_with?('-') ? arg[0..1] : arg
+    arg.start_with?('--') ? arg : arg[0..1]
   end
 
-  def self.get_flag_value flag
-    value = ARGV.shift
-
-    if value.nil? or flag? value
-      abort "Expected value for flag #{flag}"
+  def self.get_flag_value arg
+    if arg.start_with? '--' or arg.size == 2
+      value = ARGV.shift
+      abort "Expected value for flag #{arg}" if value.nil? or flag? value
+    else
+      value = arg[2..-1]
     end
-
-    return value
+    value
   end
 
   def self.get_complete_flag_name flag
@@ -53,9 +53,9 @@ module ArgumentsParser
       break if argument.nil?
 
       if flag? argument
-        flag_name = get_flag_name argument
+        flag = get_flag_name argument
 
-        case get_complete_flag_name flag_name
+        case get_complete_flag_name flag
           when '--include-path'
             flag_value = get_flag_value argument
             options['include_path'] << flag_value
@@ -69,7 +69,7 @@ module ArgumentsParser
             options['libraries'] << flag_value
 
           else
-            abort "Unknown flag #{flag_name}"
+            abort "Unknown flag #{flag}"
         end
 
       else
