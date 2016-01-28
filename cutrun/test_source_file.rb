@@ -55,10 +55,17 @@ module CutRun
       command = [
         "cc",
         "-DCUT_SINGLE_FILE=1",
-        "-c #{@path}",
-        "-o #{@object_path}"
+         "#{@path}"
       ]
+
       command += @include_path.map {|path| "-I#{path}"}
+
+      if @context.options['only_expand_macros'] == true
+        command << "-E"
+      else
+        command << "-c"
+        command << "-o #{@object_path}"
+      end
 
       system command*' '
     end

@@ -25,9 +25,9 @@ SUITE(libft, {
         IT("fills a buffer of length 100 with 42", {
             memset(b2, 42, 100);
             ft_memset(b1, 42, 100);
-            ASSERT(memcmp(b1, b2, 100) == 0)            
+            ASSERT(memcmp(b1, b2, 100) == 0)
         })
-        
+
         IT("doesn't write to buffer when length is 0", {
             b1[0] = 1;
             ft_memset(b1, 0, 0);
@@ -78,19 +78,19 @@ SUITE(libft, {
 
         p1 = memccpy(buf2, buf1, 'i', 10);
         p2 = ft_memccpy(buf2, buf1, 'i', 10);
-        
+
         IT("copies a buffer of size 10 with 'i' as a delimiter",
             ASSERT(p1 == p2))
-        
+
         IT("returns NULL on not found",
             ASSERT(ft_memccpy(buf2, buf1, 'k', 5) == NULL))
 
         IT("behaves correctly with a length of 0",
             ASSERT(ft_memccpy(buf2, buf1, 0, 0) == memccpy(buf2, buf1, 0, 0)))
-        
+
         IT("behaves correctly when seeking for a NUL byte",
             ASSERT(ft_memccpy(buf2, buf1, 0, sizeof(buf1)) == memccpy(buf2, buf1, 0, sizeof(buf1))))
-        
+
         IT("behaves correctly on match",
             ASSERT(ft_memccpy(buf2, buf1, 'C', 10) == (buf2 + 1)))
     })
@@ -110,7 +110,7 @@ SUITE(libft, {
 
         IT("matches the first char in a string",
             ASSERT(ft_memchr(test, 'a', 5) == test))
-        
+
         IT("matches a char in a string",
             ASSERT(ft_memchr(test, 'c', 5) == test + 2))
 

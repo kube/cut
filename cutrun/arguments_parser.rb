@@ -68,6 +68,9 @@ module ArgumentsParser
             flag_value = get_flag_value argument
             options['libraries'] << flag_value
 
+          when '--only-expand-macros'
+            options['only_expand_macros'] = true
+
           else
             abort "Unknown flag #{flag}"
         end

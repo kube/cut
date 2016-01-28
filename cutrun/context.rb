@@ -14,12 +14,14 @@ module CutRun
   class Context
     attr_reader :include_path
     attr_reader :out_folder
+    attr_reader :options
 
     def initialize options
       @libraries    = options['libraries']
       @library_path = options['library_path']
       @include_path = options['include_path']
       @out_folder   = options['out_folder']
+      @options      = options
 
       system "mkdir -p #{@out_folder}"
 

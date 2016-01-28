@@ -14,54 +14,10 @@
 # include <unistd.h>
 # include <stdio.h>
 # include <stdlib.h>
-# include <sys/mman.h>
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <signal.h>
 # include <string.h>
-# include <fcntl.h>
 
-# define COLOR_NORMAL   "\x1B[0m"
-# define COLOR_RED      "\x1B[31m"
-# define COLOR_GREEN    "\x1B[32m"
-# define COLOR_YELLOW   "\x1B[33m"
-# define COLOR_BLUE     "\x1B[34m"
-# define COLOR_MAGENTA  "\x1B[35m"
-# define COLOR_CYAN     "\x1B[36m"
-# define COLOR_WHITE    "\x1B[37m"
-# define COLOR_SLATE    "\x1B[30;01m"
-
-
-typedef enum
-{
-    IT_SUCCESS,
-    IT_FAIL,
-    IT_SIGSEGV
-}   __cut_it_status;
-
-
-
-typedef struct                  __s_cut_assertion
-{
-    char*                       title;
-    struct __s_cut_assertion*   next;
-}                               __cut_assertion;
-
-typedef struct                  __s_cut_it
-{
-    char*                       title;
-    __cut_it_status             status;
-    __cut_assertion*            assertions;
-    struct __s_cut_it*          next;
-}                               __cut_it;
-
-struct
-{
-    __cut_it*                   it;
-    int                         fd;
-    void*                       memory_page;
-}                               __cut_state;
-
+# include "cut_reporter_interface.h"
+# include "cut_default_reporter.h"
 
 
 /*
@@ -96,15 +52,27 @@ struct
 # define TEST_SUITE(_title)                                                 \
 {                                                                           \
     void _test_suite_ ## _title (void);                                     \
+                                                                            \
+    __CUT_APPEND_NEW_NODE(SUITE)                                            \
+    __cut_state.current_node->title = #_title;                              \
+    __cut_state.current_node->status = CUT_SUCCESS;                         \
+                                                                            \
     _test_suite_ ## _title ();                                              \
+                                                                            \
+    __cut_print_node(__cut_state.current_node);                             \
+    __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
 
 # define DESCRIBE(_title, _block)                                           \
 {                                                                           \
-    printf("\n%sDescribe%s %s\n",                                           \
-        COLOR_SLATE, COLOR_NORMAL, _title);                                 \
+    __CUT_APPEND_NEW_NODE(DESCRIBE)                                         \
+    __cut_state.current_node->title = __CUT_STRDUP(_title);                 \
+    __cut_state.current_node->status = CUT_SUCCESS;                         \
+                                                                            \
     _block                                                                  \
+                                                                            \
+    __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
 
@@ -116,8 +84,9 @@ struct
     int         pipe_fd[2];                                                 \
     FILE*       pipe_file;                                                  \
                                                                             \
-    __cut_state.it = __CUT_NEW(it);                                         \
-    __cut_state.it->title = _title;                                         \
+    __CUT_APPEND_NEW_NODE(IT)                                               \
+    __cut_state.current_node->title = _title;                               \
+    __cut_state.current_node->status = CUT_SUCCESS;                         \
                                                                             \
     /* Create a pipe before fork to communicate with child */               \
     pipe(pipe_fd);                                                          \
@@ -126,7 +95,6 @@ struct
     child_process = fork();                                                 \
     is_child_process = !child_process;                                      \
                                                                             \
-    /* Child Process */                                                     \
     if (is_child_process)                                                   \
     {                                                                       \
         /* Close pipe read-side */                                          \
@@ -139,12 +107,12 @@ struct
         fclose(pipe_file);                                                  \
         exit(0);                                                            \
     }                                                                       \
-    /* Parent Process */                                                    \
     else                                                                    \
+    /* Parent Process */                                                    \
     {                                                                       \
         char*       pipe_buffer;                                            \
         size_t      pipe_buffer_size;                                       \
-        int         number_of_errors;                                       \
+        int         nb_errors;                                              \
                                                                             \
         /* Close pipe write-side */                                         \
         close(pipe_fd[1]);                                                  \
@@ -153,14 +121,15 @@ struct
         pipe_buffer = malloc(pipe_buffer_size);                             \
         pipe_file = fdopen(pipe_fd[0], "r");                                \
                                                                             \
-        number_of_errors = 0;                                               \
+        nb_errors = 0;                                                      \
                                                                             \
         while (getline(&pipe_buffer, &pipe_buffer_size, pipe_file) != -1)   \
         {                                                                   \
-            printf("%s\n", pipe_buffer);                                    \
-            number_of_errors++;                                             \
-            __cut_state.it->status = IT_FAIL;                               \
+            __CUT_APPEND_ASSERTION(pipe_buffer, CUT_FAIL)                   \
+            nb_errors++;                                                    \
         }                                                                   \
+        __cut_state.current_node->status = nb_errors > 0 ?                  \
+            CUT_FAIL : CUT_SUCCESS;                                         \
                                                                             \
         waitpid(child_process, &child_status, 0);                           \
                                                                             \
@@ -170,14 +139,14 @@ struct
             switch (WTERMSIG(child_status))                                 \
             {                                                               \
                 case SIGSEGV:                                               \
-                    __cut_state.it->status = IT_SIGSEGV;                    \
+                    __cut_state.current_node->status = CUT_SIGSEGV;         \
                     break;                                                  \
             }                                                               \
         }                                                                   \
                                                                             \
         fclose(pipe_file);                                                  \
     }                                                                       \
-    __CUT_PRINT_IT(__cut_state.it)                                          \
+    __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
 
@@ -186,6 +155,9 @@ struct
     pid_t   child_process;                                                  \
     int     is_child_process;                                               \
     int     child_status;                                                   \
+                                                                            \
+    /* Flush to prevent duplicate previous assertions */                    \
+    fflush(pipe_file);                                                      \
                                                                             \
     /* Run in separate process to catch signals */                          \
     child_process = fork();                                                 \
@@ -216,9 +188,9 @@ struct
 
 # define ASSERTION_FAIL(_message)                                           \
 {                                                                           \
-    fprintf(pipe_file, "%s\n", _message);                                   \
+    fprintf(pipe_file, "Line %d: %s\n", __LINE__, _message);                \
 }                                                                           \
-    
+
 
 # define ASSERT(_assertion)                                                 \
 {                                                                           \
@@ -229,18 +201,6 @@ struct
 }                                                                           \
 
 
-# define TEST_INIT()                                                        \
-{                                                                           \
-}                                                                           \
-
-
-# define TEST_END()                                                         \
-{                                                                           \
-    printf("%sSuccess!%s\n\n", COLOR_GREEN, COLOR_NORMAL);                  \
-}                                                                           \
-
-
-
 /*
 **  CUT PRIVATE MACROS
 */
@@ -249,78 +209,93 @@ struct
     (memset(malloc(_size), 0, _size))                                       \
 
 
+# define __CUT_FREE(_pointer))                                              \
+    (free(_pointer))                                                        \
+
+
 # define __CUT_NEW(_type)                                                   \
     (__CUT_ALLOC(sizeof(__cut_ ## _type)))                                  \
 
 
-# define __CUT_STR_DUP(_str)                                                \
+# define __CUT_STRDUP(_str)                                                 \
     (strcpy(__CUT_ALLOC(strlen(_str)), _str))                               \
 
 
-# define __CUT_APPEND_ASSERTION(_assertion_text)                            \
+// Append a new child node to current_node
+// And set it as the new current_node
+# define __CUT_APPEND_NEW_NODE(_type)                                       \
 {                                                                           \
-    __cut_assertion*    assertion;                                          \
-    __cut_assertion*    last_assertion;                                     \
+    __cut_node*    new_node;                                                \
                                                                             \
-    assertion = __CUT_NEW(assertion);                                       \
-    assertion->title = _assertion_text;                                     \
+    new_node = __CUT_NEW(node);                                             \
+    new_node->type = CUT_ ## _type;                                         \
                                                                             \
-    if (!__cut_state.it->assertions)                                        \
+    /* No current_node, set new_node as root */                             \
+    if (!__cut_state.current_node)                                          \
     {                                                                       \
-        __cut_state.it->assertions = assertion;                             \
+        __cut_state.current_node = new_node;                                \
+        new_node->depth = 0;                                                \
     }                                                                       \
+    /* current_node has no child, set new_node as first child */            \
+    else if (!__cut_state.current_node->first_child)                        \
+    {                                                                       \
+        __cut_state.current_node->first_child = new_node;                   \
+        new_node->parent_node = __cut_state.current_node;                   \
+        __cut_state.current_node = new_node;                                \
+        new_node->parent_node->last_child = new_node;                       \
+        new_node->depth = new_node->parent_node->depth + 1;                 \
+    }                                                                       \
+    /* current_node has child, set new_node as last child */                \
     else                                                                    \
     {                                                                       \
-        last_assertion = __cut_state.it->assertions;                        \
-        while (last_assertion->next)                                        \
-            last_assertion = last_assertion->next;                          \
-        last_assertion->next = assertion;                                   \
-        last_assertion->next = NULL;                                        \
+        __cut_state.current_node->last_child->next_sibling = new_node;      \
+        new_node->parent_node = __cut_state.current_node;                   \
+        __cut_state.current_node = new_node;                                \
+        new_node->parent_node->last_child = new_node;                       \
+        new_node->depth = new_node->parent_node->depth + 1;                 \
     }                                                                       \
 }                                                                           \
 
 
-# define __CUT_PRINT_ASSERTION(_assertion)                                  \
-    printf("    %sExpected %s%s\n",                                         \
-        COLOR_RED, _assertion->title, COLOR_NORMAL);                        \
-
-
-# define __CUT_PRINT_IT_RESULT(result, color)                               \
-    printf(" %s[%s]%s\n", COLOR_ ## color, result, COLOR_NORMAL);           \
-
-
-# define __CUT_PRINT_IT(it)                                                 \
+// Set current_node back to its parent
+# define __CUT_FINISH_CURRENT_NODE()                                        \
 {                                                                           \
-    printf("  %sIt%s %s ",                                                  \
-        COLOR_SLATE, COLOR_NORMAL, it->title);                              \
-                                                                            \
-    switch(it->status)                                                      \
-    {                                                                       \
-        case IT_SUCCESS:                                                    \
-            __CUT_PRINT_IT_RESULT("OK", GREEN)                              \
-            break;                                                          \
-                                                                            \
-        case IT_FAIL:                                                       \
-            __CUT_PRINT_IT_RESULT("FAIL", RED)                              \
-            break;                                                          \
-                                                                            \
-        case IT_SIGSEGV:                                                    \
-            __CUT_PRINT_IT_RESULT("SIGSEGV", YELLOW)                        \
-            break;                                                          \
-    }                                                                       \
-                                                                            \
-    /* Print assertions */                                                  \
-    if (it->assertions)                                                     \
-    {                                                                       \
-        __cut_assertion*    current;                                        \
-        current = it->assertions;                                           \
-        while(current)                                                      \
-        {                                                                   \
-            __CUT_PRINT_ASSERTION(current)                                  \
-            current = current->next;                                        \
-        }                                                                   \
-    }                                                                       \
+    __cut_state.current_node = __cut_state.current_node->parent_node;       \
 }                                                                           \
 
+
+# define __CUT_APPEND_ASSERTION(_title, _status)                            \
+{                                                                           \
+    __CUT_APPEND_NEW_NODE(ASSERTION)                                        \
+    __cut_state.current_node->title = __CUT_STRDUP(_title);                 \
+    __cut_state.current_node->status = _status;                             \
+    __CUT_FINISH_CURRENT_NODE()                                             \
+}                                                                           \
+
+
+void __cut_print_node(__cut_node* _node)
+{
+    switch (_node->type)
+    {
+        case CUT_SUITE:
+            __CUT_PRINT_SUITE(_node)
+            break;
+
+        case CUT_DESCRIBE:
+            __CUT_PRINT_DESCRIBE(_node)
+            break;
+
+        case CUT_IT:
+            __CUT_PRINT_IT(_node)
+            break;
+
+        case CUT_ASSERTION:
+            __CUT_PRINT_ASSERTION(_node)
+            break;
+
+        default:
+            break;
+    }
+}
 
 #endif
