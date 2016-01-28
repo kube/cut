@@ -60,6 +60,8 @@ module CutRun
 
       command += @include_path.map {|path| "-I#{path}"}
 
+      command << "-DCUT_REPORTER_HEADER=\"\\\"cut_#{@context.options['reporter']}_reporter.h\\\"\""
+
       if @context.options['only_expand_macros'] == true
         command << "-E"
       else

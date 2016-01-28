@@ -17,7 +17,7 @@
 # include <string.h>
 
 # include "cut_reporter_interface.h"
-# include "cut_default_reporter.h"
+# include CUT_REPORTER_HEADER
 
 
 /*

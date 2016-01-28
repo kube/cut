@@ -44,7 +44,8 @@ module ArgumentsParser
       'libraries' => [],
       'include_path' => [],
       'library_path' => [],
-      'out_folder' => './.cutrun_objects/'
+      'out_folder' => './.cutrun_objects/',
+      'reporter' => 'default'
     }
 
     # Parse all arguments
@@ -70,6 +71,10 @@ module ArgumentsParser
 
           when '--only-expand-macros'
             options['only_expand_macros'] = true
+
+          when '--reporter'
+            flag_value = get_flag_value argument
+            options['reporter'] = flag_value
 
           else
             abort "Unknown flag #{flag}"
