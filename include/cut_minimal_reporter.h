@@ -32,8 +32,8 @@
 # define CUT_CHECK_MARK "\u2714"
 # define CUT_CROSS_MARK "\u2718"
 
-# define __CUT_COL_WIDTH    58
-# define __CUT_INDENT_SIZE  2
+# define __CUT_COL_WIDTH    42
+# define __CUT_INDENT_SIZE  1
 
 
 /*
@@ -51,15 +51,13 @@
 
 # define __CUT_PRINT_DESCRIBE(_describe)                                    \
 {                                                                           \
-    /* Empty line if not first Describe */                                  \
-    if (_describe != _describe->parent_node->first_child)                   \
-    {                                                                       \
-        printf("\n");                                                       \
-    }                                                                       \
+        _describe->status == CUT_SUCCESS ?                                  \
+            printf(" %s%s", COLOR_GREEN, CUT_CHECK_MARK) :                  \
+            printf(" %s%s", COLOR_RED, CUT_CROSS_MARK);                     \
                                                                             \
-    printf("%-*s%sDescribe%s %s\n",                                         \
-        (__CUT_INDENT_SIZE * _describe->depth), "", \
-        COLOR_SLATE, COLOR_NORMAL, _describe->title);                       \
+    printf("%-*s%s\n",                                                      \
+        (__CUT_INDENT_SIZE * _describe->depth), "",                         \
+        _describe->title);                                                  \
                                                                             \
     __CUT_PRINT_CHILD_NODES(_describe);                                     \
 }                                                                           \
@@ -67,21 +65,24 @@
 
 # define __CUT_PRINT_IT(_it)                                                \
 {                                                                           \
-    printf("%*s",                                                           \
-        (__CUT_INDENT_SIZE * _it->depth), "");                              \
+    if (_it->status != CUT_SUCCESS)                                         \
+    {                                                                       \
+        printf(" %*s",                                                      \
+            (__CUT_INDENT_SIZE * _it->depth), "");                          \
                                                                             \
-    _it->status == CUT_SUCCESS ?                                            \
-        printf("%s%s", COLOR_GREEN, CUT_CHECK_MARK) :                       \
-        printf("%s%s", COLOR_RED, CUT_CROSS_MARK);                          \
+        _it->status == CUT_SUCCESS ?                                        \
+            printf("%s%s", COLOR_GREEN, CUT_CHECK_MARK) :                   \
+            printf("%s%s", COLOR_RED, CUT_CROSS_MARK);                      \
                                                                             \
-    printf("%s It%s %-*.*s%s%s%s\n",                                        \
-        COLOR_SLATE, COLOR_NORMAL,                                          \
-        __CUT_COL_WIDTH, __CUT_COL_WIDTH, _it->title,                       \
-        COLOR_SLATE,                                                        \
-        (strlen(_it->title) > __CUT_COL_WIDTH ? "..." : "   "),             \
-        COLOR_NORMAL);                                                      \
+        printf("%s It%s %-*.*s%s%s%s\n",                                    \
+            COLOR_SLATE, COLOR_NORMAL,                                      \
+            __CUT_COL_WIDTH, __CUT_COL_WIDTH, _it->title,                   \
+            COLOR_SLATE,                                                    \
+            (strlen(_it->title) > __CUT_COL_WIDTH ? "..." : "   "),         \
+            COLOR_NORMAL);                                                  \
                                                                             \
-    __CUT_PRINT_CHILD_NODES(_it);                                           \
+        __CUT_PRINT_CHILD_NODES(_it);                                       \
+    }                                                                       \
 }                                                                           \
 
 
@@ -100,7 +101,7 @@
             break;                                                          \
     }                                                                       \
                                                                             \
-    printf("%-*s%s%s%s",                                                    \
+    printf("  %-*s%s%s%s",                                                  \
         (__CUT_INDENT_SIZE * _assertion->depth), "",                        \
         color, _assertion->title, COLOR_NORMAL);                            \
 }                                                                           \

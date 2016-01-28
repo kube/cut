@@ -140,6 +140,8 @@
             {                                                               \
                 case SIGSEGV:                                               \
                     __cut_state.current_node->status = CUT_SIGSEGV;         \
+                    __CUT_APPEND_ASSERTION("Unexpected SIGSEGV\n",          \
+                        CUT_SIGSEGV)                                        \
                     break;                                                  \
             }                                                               \
         }                                                                   \
@@ -264,14 +266,33 @@
 }                                                                           \
 
 
+# define __CUT_SET_PARENTS_FAIL(_node)                                      \
+{                                                                           \
+    __cut_node* node;                                                       \
+                                                                            \
+    node = _node;                                                           \
+    while (node->parent_node)                                               \
+    {                                                                       \
+        node->status = CUT_FAIL;                                            \
+        node = node->parent_node;                                           \
+    }                                                                       \
+}                                                                           \
+
+
 # define __CUT_APPEND_ASSERTION(_title, _status)                            \
 {                                                                           \
     __CUT_APPEND_NEW_NODE(ASSERTION)                                        \
     __cut_state.current_node->title = __CUT_STRDUP(_title);                 \
     __cut_state.current_node->status = _status;                             \
+    __CUT_SET_PARENTS_FAIL(__cut_state.current_node)                        \
     __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
+
+/*
+**  CUT PRIVATE FUNCTIONS
+**  Only print_node is defined as a function because of its recursion
+*/
 
 void __cut_print_node(__cut_node* _node)
 {

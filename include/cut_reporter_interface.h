@@ -16,6 +16,7 @@
 # include <stdlib.h>
 # include <string.h>
 
+
 /*
 **  CUT STRUCTURES AND TYPES
 */
@@ -52,6 +53,10 @@ struct
     __cut_node*                 current_node;
 }                               __cut_state;
 
+
+/*
+**  CUT REPORTER PRIVATE
+*/
 
 void __cut_print_node(__cut_node* _node);
 

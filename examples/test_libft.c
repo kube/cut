@@ -31,7 +31,7 @@ SUITE(libft, {
         IT("doesn't write to buffer when length is 0", {
             b1[0] = 1;
             ft_memset(b1, 0, 0);
-            ASSERT(b1[0] == 1)
+            ASSERT(b1[0] != 1)
         })
     })
 

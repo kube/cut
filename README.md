@@ -16,8 +16,8 @@ SUITE(hitchhiker, {
 
 ```
 
-###Suite, Describe, It and Assert
-The
+###Syntax
+
 
 
 ###Signals
