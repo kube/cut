@@ -136,4 +136,226 @@ SUITE(libft, {
         IT("returns zero when length is 0",
             ASSERT(ft_memcmp("aww", "bpp", 0) == 0))
     })
+
+    DESCRIBE("ft_strlen", {
+
+        IT("returns 4 on a string of length 4",
+            ASSERT(ft_strlen("chat") == 4))
+
+        IT("should return zero on the empty string",
+            ASSERT(ft_strlen("") == 0))
+
+        IT("should return 5 on a string of length 5",
+            ASSERT(ft_strlen("abcde") == 5))
+    })
+
+    DESCRIBE("ft_strdup", {
+        char    *c = "AbC";
+
+        IT("returns a string with the same content",
+            ASSERT(strcmp(ft_strdup("aaaaa"), "aaaaa") == 0))
+
+        IT("returns an empty string when called on the empty string",
+            ASSERT(strcmp(ft_strdup(""), "") == 0))
+
+        IT("returns a string with a different address",
+            ASSERT(c != ft_strdup(c)))
+
+        IT("returns a NUL terminated string",
+            ASSERT(ft_strdup("abc")[4] == 0))
+    })
+
+    DESCRIBE("ft_strcpy", {
+        char    buf[6];
+
+        IT("copys a string of length 5", {
+            ft_strcpy(buf, "abcde");
+            ASSERT(strcmp(buf, "abcde") == 0)
+        })
+    })
+
+    DESCRIBE("ft_strncpy", {
+        char    b[6];
+
+        IT("copys a string of length 3 in a buffer of capacity 6", {
+            ft_strncpy(b, "abc", 6);
+            ASSERT(memcmp(b, "abc\0\0", 6) == 0)
+        })
+
+        IT("truncates and copies a string of length 9 in a buffer of capacity 6", {
+            ft_strncpy(b, "abcdefghi", 6);
+            ASSERT(memcmp(b, "abcdefghi", 6) == 0)
+        })
+    })
+
+    DESCRIBE("ft_strcat", {
+        char    buf[9];
+
+        IT("concats multiple strings, including the empty string", {
+            bzero(buf, 9);
+            ft_strcat(buf, "Bon");
+            ft_strcat(buf, "jour.");
+            ft_strcat(buf, "");
+            ASSERT(strcmp(buf, "Bonjour.") == 0)
+        })
+    })
+
+    DESCRIBE("ft_strncat", {
+        char    buf[20];
+
+        strcpy(buf, "To be ");
+        ft_strncat(buf, "or not to be", 6);
+
+        IT("concats and truncate multiple strings",
+            ASSERT(strcmp(buf, "To be or not") == 0))
+
+        IT("doesn't write to string when length is zero", {
+            ft_strncat(buf, "efefef", 0);
+            ASSERT(strcmp(buf, "To be or not") == 0)
+        })
+
+        IT("returns dst",
+            ASSERT(buf == ft_strncat(buf, "", 0)))
+    })
+
+    DESCRIBE("ft_strlcat", {
+        char    buf[10];
+
+        bzero(buf, 10);
+        strcpy(buf, "abc");
+        ft_strlcat(buf, "abcdefghijklmnop", 10);
+
+        IT("concats and truncate a string",
+            ASSERT(strcmp(buf, "abcabcdef") == 0))
+
+        IT("returns length of the full string",
+            ASSERT(ft_strlcat(buf, "abcd", 2) == 6))
+
+        IT("returns length of the full string", {
+            bzero(buf, 10);
+            ASSERT(ft_strlcat(buf, "abc", 10) == 3)
+            ASSERT(ft_strlcat(buf, "def", 10) == 6)
+        })
+
+        IT("returns length of the full string", {
+            bzero(buf, 10);
+            memset(buf, 'a', 10);
+            ASSERT(ft_strlcat(buf, "ccc", 10) == 13)
+        })
+    })
+
+    DESCRIBE("ft_strchr", {
+        char    buf[] = "Je suis un poisson.";
+
+        IT("matches on 'p'",
+            ASSERT(strchr(buf, 'p') == ft_strchr(buf, 'p')))
+
+        IT("matches on NUL byte",
+            ASSERT(strchr(buf, 0) == ft_strchr(buf, 0)))
+
+        IT("matches on first char",
+            ASSERT(ft_strchr(buf, 'J') == buf))
+
+        IT("returns NULL on not found",
+            ASSERT(ft_strchr(buf, 'z') == 0))
+    })
+
+    DESCRIBE("ft_strrchr", {
+        char    buf[] = "abcdedcba";
+
+        IT("matches on 'a'",
+            ASSERT(strrchr(buf, 'a') == ft_strrchr(buf, 'a')))
+
+        IT("matches on NUL byte",
+            ASSERT(strrchr(buf, 0) == ft_strrchr(buf, 0)))
+
+        IT("returns NULL on not found",
+            ASSERT(ft_strrchr(buf, 'z') == 0))
+
+        buf[5] = 0;
+
+        IT("matches on first char",
+            ASSERT(ft_strrchr(buf, 'a') == buf))
+    })
+
+    DESCRIBE("ft_strstr", {
+        char    buf[] = "Ceci n'est pas une pipe.";
+
+        IT("matches a substring",
+            ASSERT(strstr(buf, "une") == ft_strstr(buf, "une")))
+
+        IT("matches empty string",
+            ASSERT(strstr(buf, "") == ft_strstr(buf, "")))
+
+        IT("returns NULL on not found", {
+            ASSERT(strstr(buf, "aaaaa") == 0)
+            ASSERT(ft_strstr(buf, "BWAAAAAAAAAAAAAAAAAAA") == 0)
+        })
+    })
+
+    DESCRIBE("ft_strnstr", {
+        char    buf[10];
+
+        bzero(buf, 10);
+        strcpy(buf, "un deux 9");
+
+        IT("matches a substring in the first 10 chars",
+            ASSERT(strnstr(buf, "deux", 10) == ft_strnstr(buf, "deux", 10)))
+
+        IT("matches a substring in the first 3 chars",
+            ASSERT(strnstr(buf, "9", 3) == ft_strnstr(buf, "9", 3)))
+
+        IT("matches the empty string",
+            ASSERT(ft_strnstr(buf, "", 6) == buf))
+
+        IT("doesn't search past the first 5 chars",
+            ASSERT(ft_strnstr(buf, "deux", 5) == strnstr(buf, "deux", 5)))
+
+        IT("matches the last char",
+            ASSERT(ft_strnstr(buf, "9", 10) == strnstr(buf, "9", 10)))
+
+        buf[9] = '6';
+
+        IT("returns NULL on not found",
+            ASSERT(strnstr(buf, "cinq", 10) == ft_strnstr(buf, "cinq", 10)))
+
+        IT("matches in the first 10 chars",
+            ASSERT(strnstr(buf, "deux", 10) == ft_strnstr(buf, "deux", 10)))
+
+        IT("doesn't match past the end",
+            ASSERT(strnstr(buf, "9682", 10) == ft_strnstr(buf, "9682", 10)))
+
+        IT("matches in the first 10 chars",
+            ASSERT(strnstr(buf, "6", 10) == ft_strnstr(buf, "6", 10)))
+
+        IT("matches nothing on the empty string", {
+            buf[1] = 0;
+            ASSERT(strnstr(buf, "deux", 10) == ft_strnstr(buf, "deux", 10))
+        })
+
+    })
+
+    DESCRIBE("ft_strcmp", {
+
+        IT("returns zero on equal strings",
+            ASSERT(ft_strcmp("abc", "abc") == 0))
+
+        IT("returns a negative integer when s1 < s2",
+            ASSERT(ft_strcmp("abc", "abd") < 0))
+
+        IT("returns a nonzero integer on different strings",
+            ASSERT(ft_strcmp("a", "abcde") != 0))
+    })
+
+    DESCRIBE("ft_strncmp", {
+
+        IT("returns zero when the first 3 char are identical",
+            ASSERT(ft_strncmp("abc", "abcde", 3) == 0))
+
+        IT("returns zero on identical strings",
+            ASSERT(ft_strncmp("abc", "abc\0defg", 100) == 0))
+
+        IT("returns nonzero on different strings",
+            ASSERT(ft_strncmp("ab\0cde", "abcc\0e", 20) != 0))
+    })
 })
