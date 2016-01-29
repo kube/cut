@@ -332,7 +332,6 @@ SUITE(libft, {
             buf[1] = 0;
             ASSERT(strnstr(buf, "deux", 10) == ft_strnstr(buf, "deux", 10))
         })
-
     })
 
     DESCRIBE("ft_strcmp", {

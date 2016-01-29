@@ -62,15 +62,18 @@ void __cut_print_node(__cut_node* _node);
 
 # define __CUT_PRINT_CHILD_NODES(_node)                                     \
 {                                                                           \
-    if (_node->first_child)                                                 \
+    if (_node->type >= CUT_GRANULARITY)                                     \
     {                                                                       \
-        __cut_node*    current_child;                                       \
-                                                                            \
-        current_child = _node->first_child;                                 \
-        while(current_child)                                                \
+        if (_node->first_child)                                             \
         {                                                                   \
-            __cut_print_node(current_child);                                \
-            current_child = current_child->next_sibling;                    \
+            __cut_node*    current_child;                                   \
+                                                                            \
+            current_child = _node->first_child;                             \
+            while(current_child)                                            \
+            {                                                               \
+                __cut_print_node(current_child);                            \
+                current_child = current_child->next_sibling;                \
+            }                                                               \
         }                                                                   \
     }                                                                       \
 }                                                                           \

@@ -40,26 +40,35 @@
 **  CUT REPORTER INTERFACE
 */
 
+# define __CUT_ON_DESCRIBE_START()              \
+
+# define __CUT_ON_DESCRIBE_END()              \
+
+# define __CUT_ON_SUITE_START()              \
+
+# define __CUT_ON_SUITE_END()              \
+
+
+/*
+**  CUT REPORTER PRIVATE MACROS
+*/
+
 # define __CUT_PRINT_SUITE(_suite)                                          \
 {                                                                           \
     printf("%sSuite%s %s\n",                                                \
         COLOR_SLATE, COLOR_NORMAL, _suite->title);                          \
-                                                                            \
-    __CUT_PRINT_CHILD_NODES(_suite);                                        \
 }                                                                           \
 
 
 # define __CUT_PRINT_DESCRIBE(_describe)                                    \
 {                                                                           \
-        _describe->status == CUT_SUCCESS ?                                  \
-            printf(" %s%s", COLOR_GREEN, CUT_CHECK_MARK) :                  \
-            printf(" %s%s", COLOR_RED, CUT_CROSS_MARK);                     \
+    _describe->status == CUT_SUCCESS ?                                      \
+        printf(" %s%s", COLOR_GREEN, CUT_CHECK_MARK) :                      \
+        printf(" %s%s", COLOR_RED, CUT_CROSS_MARK);                         \
                                                                             \
     printf("%-*s%s\n",                                                      \
         (__CUT_INDENT_SIZE * _describe->depth), "",                         \
         _describe->title);                                                  \
-                                                                            \
-    __CUT_PRINT_CHILD_NODES(_describe);                                     \
 }                                                                           \
 
 
@@ -80,8 +89,6 @@
             COLOR_SLATE,                                                    \
             (strlen(_it->title) > __CUT_COL_WIDTH ? "..." : "   "),         \
             COLOR_NORMAL);                                                  \
-                                                                            \
-        __CUT_PRINT_CHILD_NODES(_it);                                       \
     }                                                                       \
 }                                                                           \
 

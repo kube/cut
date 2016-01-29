@@ -17,6 +17,13 @@
 # include <string.h>
 
 # include "cut_reporter_interface.h"
+
+# define CUT_GRANULARITY CUT_SUITE
+
+# ifndef CUT_REPORTER_HEADER
+# define CUT_REPORTER_HEADER "cut_default_reporter.h"
+# endif
+
 # include CUT_REPORTER_HEADER
 
 
@@ -57,9 +64,11 @@
     __cut_state.current_node->title = #_title;                              \
     __cut_state.current_node->status = CUT_SUCCESS;                         \
                                                                             \
+    __CUT_PRINT_NODE_TITLE(__cut_state.current_node);                       \
+                                                                            \
     _test_suite_ ## _title ();                                              \
                                                                             \
-    __cut_print_node(__cut_state.current_node);                             \
+    __CUT_PRINT_NODE(__cut_state.current_node);                             \
     __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
@@ -70,8 +79,11 @@
     __cut_state.current_node->title = __CUT_STRDUP(_title);                 \
     __cut_state.current_node->status = CUT_SUCCESS;                         \
                                                                             \
+    __CUT_PRINT_NODE_TITLE(__cut_state.current_node);                       \
+                                                                            \
     _block                                                                  \
                                                                             \
+    __CUT_PRINT_NODE(__cut_state.current_node);                             \
     __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
@@ -87,6 +99,8 @@
     __CUT_APPEND_NEW_NODE(IT)                                               \
     __cut_state.current_node->title = _title;                               \
     __cut_state.current_node->status = CUT_SUCCESS;                         \
+                                                                            \
+    __CUT_ON_IT_START(__cut_state.current_node)                             \
                                                                             \
     /* Create a pipe before fork to communicate with child */               \
     pipe(pipe_fd);                                                          \
@@ -104,6 +118,7 @@
                                                                             \
         _block                                                              \
                                                                             \
+        usleep(1000000)                                                                            \
         fclose(pipe_file);                                                  \
         exit(0);                                                            \
     }                                                                       \
@@ -148,6 +163,7 @@
                                                                             \
         fclose(pipe_file);                                                  \
     }                                                                       \
+    __CUT_ON_IT_END(__cut_state.current_node)                               \
     __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
@@ -286,6 +302,14 @@
     __cut_state.current_node->status = _status;                             \
     __CUT_SET_PARENTS_FAIL(__cut_state.current_node)                        \
     __CUT_FINISH_CURRENT_NODE()                                             \
+}                                                                           \
+
+# define __CUT_PRINT_NODE(_node)                                            \
+{                                                                           \
+    if (_node->type <= CUT_GRANULARITY)                                     \
+    {                                                                       \
+        __cut_print_node(_node);                                            \
+    }                                                                       \
 }                                                                           \
 
 
