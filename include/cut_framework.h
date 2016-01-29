@@ -18,8 +18,6 @@
 
 # include "cut_reporter_interface.h"
 
-# define CUT_GRANULARITY CUT_SUITE
-
 # ifndef CUT_REPORTER_HEADER
 # define CUT_REPORTER_HEADER "cut_default_reporter.h"
 # endif
@@ -64,11 +62,11 @@
     __cut_state.current_node->title = #_title;                              \
     __cut_state.current_node->status = CUT_SUCCESS;                         \
                                                                             \
-    __CUT_PRINT_NODE_TITLE(__cut_state.current_node);                       \
+    __CUT_ON_SUITE_START(__cut_state.current_node)                          \
                                                                             \
     _test_suite_ ## _title ();                                              \
                                                                             \
-    __CUT_PRINT_NODE(__cut_state.current_node);                             \
+    __CUT_ON_SUITE_END(__cut_state.current_node)                            \
     __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
@@ -79,11 +77,11 @@
     __cut_state.current_node->title = __CUT_STRDUP(_title);                 \
     __cut_state.current_node->status = CUT_SUCCESS;                         \
                                                                             \
-    __CUT_PRINT_NODE_TITLE(__cut_state.current_node);                       \
+    __CUT_ON_DESCRIBE_START(__cut_state.current_node)                       \
                                                                             \
     _block                                                                  \
                                                                             \
-    __CUT_PRINT_NODE(__cut_state.current_node);                             \
+    __CUT_ON_DESCRIBE_END(__cut_state.current_node)                         \
     __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 
@@ -118,7 +116,7 @@
                                                                             \
         _block                                                              \
                                                                             \
-        usleep(1000000)                                                                            \
+        usleep(1000000);                                                    \
         fclose(pipe_file);                                                  \
         exit(0);                                                            \
     }                                                                       \
@@ -303,44 +301,5 @@
     __CUT_SET_PARENTS_FAIL(__cut_state.current_node)                        \
     __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
-
-# define __CUT_PRINT_NODE(_node)                                            \
-{                                                                           \
-    if (_node->type <= CUT_GRANULARITY)                                     \
-    {                                                                       \
-        __cut_print_node(_node);                                            \
-    }                                                                       \
-}                                                                           \
-
-
-/*
-**  CUT PRIVATE FUNCTIONS
-**  Only print_node is defined as a function because of its recursion
-*/
-
-void __cut_print_node(__cut_node* _node)
-{
-    switch (_node->type)
-    {
-        case CUT_SUITE:
-            __CUT_PRINT_SUITE(_node)
-            break;
-
-        case CUT_DESCRIBE:
-            __CUT_PRINT_DESCRIBE(_node)
-            break;
-
-        case CUT_IT:
-            __CUT_PRINT_IT(_node)
-            break;
-
-        case CUT_ASSERTION:
-            __CUT_PRINT_ASSERTION(_node)
-            break;
-
-        default:
-            break;
-    }
-}
 
 #endif

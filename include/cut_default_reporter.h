@@ -40,6 +40,31 @@
 **  CUT REPORTER INTERFACE
 */
 
+# define __CUT_ON_DESCRIBE_START()                                          \
+{                                                                           \
+                                                                            \
+}                                                                           \
+
+# define __CUT_ON_DESCRIBE_END()                                            \
+{                                                                           \
+                                                                            \
+}                                                                           \
+
+# define __CUT_ON_SUITE_START()                                             \
+{                                                                           \
+                                                                            \
+}                                                                           \
+
+# define __CUT_ON_SUITE_END()                                               \
+{                                                                           \
+                                                                            \
+}                                                                           \
+
+
+/*
+**  CUT REPORTER INTERFACE
+*/
+
 # define __CUT_PRINT_SUITE(_suite)                                          \
 {                                                                           \
     printf("%sSuite%s %s\n",                                                \
@@ -104,5 +129,36 @@
         (__CUT_INDENT_SIZE * _assertion->depth), "",                        \
         color, _assertion->title, COLOR_NORMAL);                            \
 }                                                                           \
+
+
+/*
+**  CUT PRIVATE FUNCTIONS
+**  Only print_node is defined as a function because of its recursion
+*/
+
+void __cut_print_node(__cut_node* _node)
+{
+    switch (_node->type)
+    {
+        case CUT_SUITE:
+            __CUT_PRINT_SUITE(_node)
+            break;
+
+        case CUT_DESCRIBE:
+            __CUT_PRINT_DESCRIBE(_node)
+            break;
+
+        case CUT_IT:
+            __CUT_PRINT_IT(_node)
+            break;
+
+        case CUT_ASSERTION:
+            __CUT_PRINT_ASSERTION(_node)
+            break;
+
+        default:
+            break;
+    }
+}
 
 #endif
