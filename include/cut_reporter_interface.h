@@ -60,20 +60,17 @@ struct
 
 void __cut_print_node(__cut_node* _node);
 
-# define __CUT_PRINT_CHILD_NODES(_node)                                     \
+# define __CUT_FOR_EACH_CHILD_NODE(_node, _fn)                              \
 {                                                                           \
-    if (_node->type >= CUT_GRANULARITY)                                     \
+    if (_node->first_child)                                                 \
     {                                                                       \
-        if (_node->first_child)                                             \
-        {                                                                   \
-            __cut_node*    current_child;                                   \
+        __cut_node*    current_child;                                       \
                                                                             \
-            current_child = _node->first_child;                             \
-            while(current_child)                                            \
-            {                                                               \
-                __cut_print_node(current_child);                            \
-                current_child = current_child->next_sibling;                \
-            }                                                               \
+        current_child = _node->first_child;                                 \
+        while(current_child)                                                \
+        {                                                                   \
+            _fn(current_child);                                             \
+            current_child = current_child->next_sibling;                    \
         }                                                                   \
     }                                                                       \
 }                                                                           \

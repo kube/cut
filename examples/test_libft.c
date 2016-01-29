@@ -142,8 +142,8 @@ SUITE(libft, {
         IT("returns 4 on a string of length 4",
             ASSERT(ft_strlen("chat") == 4))
 
-        IT("should return zero on the empty string",
-            ASSERT(ft_strlen("") == 0))
+        IT("should return zero when empty string",
+            ASSERT(ft_strlen("") != 0))
 
         IT("should return 5 on a string of length 5",
             ASSERT(ft_strlen("abcde") == 5))
@@ -155,7 +155,7 @@ SUITE(libft, {
         IT("returns a string with the same content",
             ASSERT(strcmp(ft_strdup("aaaaa"), "aaaaa") == 0))
 
-        IT("returns an empty string when called on the empty string",
+        IT("returns an empty string when called with empty string",
             ASSERT(strcmp(ft_strdup(""), "") == 0))
 
         IT("returns a string with a different address",
@@ -168,7 +168,7 @@ SUITE(libft, {
     DESCRIBE("ft_strcpy", {
         char    buf[6];
 
-        IT("copys a string of length 5", {
+        IT("copies a string of length 5", {
             ft_strcpy(buf, "abcde");
             ASSERT(strcmp(buf, "abcde") == 0)
         })
@@ -177,7 +177,7 @@ SUITE(libft, {
     DESCRIBE("ft_strncpy", {
         char    b[6];
 
-        IT("copys a string of length 3 in a buffer of capacity 6", {
+        IT("copies a string of length 3 in a buffer of capacity 6", {
             ft_strncpy(b, "abc", 6);
             ASSERT(memcmp(b, "abc\0\0", 6) == 0)
         })
@@ -191,7 +191,7 @@ SUITE(libft, {
     DESCRIBE("ft_strcat", {
         char    buf[9];
 
-        IT("concats multiple strings, including the empty string", {
+        IT("concats multiple strings, including empty string", {
             bzero(buf, 9);
             ft_strcat(buf, "Bon");
             ft_strcat(buf, "jour.");

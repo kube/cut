@@ -116,7 +116,7 @@
                                                                             \
         _block                                                              \
                                                                             \
-        usleep(1000000);                                                    \
+        usleep(100);                                                        \
         fclose(pipe_file);                                                  \
         exit(0);                                                            \
     }                                                                       \
@@ -125,7 +125,6 @@
     {                                                                       \
         char*       pipe_buffer;                                            \
         size_t      pipe_buffer_size;                                       \
-        int         nb_errors;                                              \
                                                                             \
         /* Close pipe write-side */                                         \
         close(pipe_fd[1]);                                                  \
@@ -134,15 +133,10 @@
         pipe_buffer = malloc(pipe_buffer_size);                             \
         pipe_file = fdopen(pipe_fd[0], "r");                                \
                                                                             \
-        nb_errors = 0;                                                      \
-                                                                            \
         while (getline(&pipe_buffer, &pipe_buffer_size, pipe_file) != -1)   \
         {                                                                   \
             __CUT_APPEND_ASSERTION(pipe_buffer, CUT_FAIL)                   \
-            nb_errors++;                                                    \
         }                                                                   \
-        __cut_state.current_node->status = nb_errors > 0 ?                  \
-            CUT_FAIL : CUT_SUCCESS;                                         \
                                                                             \
         waitpid(child_process, &child_status, 0);                           \
                                                                             \
@@ -285,7 +279,7 @@
     __cut_node* node;                                                       \
                                                                             \
     node = _node;                                                           \
-    while (node->parent_node)                                               \
+    while (node)                                                            \
     {                                                                       \
         node->status = CUT_FAIL;                                            \
         node = node->parent_node;                                           \
@@ -299,6 +293,7 @@
     __cut_state.current_node->title = __CUT_STRDUP(_title);                 \
     __cut_state.current_node->status = _status;                             \
     __CUT_SET_PARENTS_FAIL(__cut_state.current_node)                        \
+    __CUT_ON_ASSERTION(__cut_state.current_node)                            \
     __CUT_FINISH_CURRENT_NODE()                                             \
 }                                                                           \
 

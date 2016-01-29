@@ -40,37 +40,59 @@
 **  CUT REPORTER INTERFACE
 */
 
-# define __CUT_ON_DESCRIBE_START()                                          \
+# define __CUT_ON_SUITE_START(_suite)                                       \
 {                                                                           \
-                                                                            \
+    __CUT_PRINT_SUITE(_suite)                                               \
 }                                                                           \
 
-# define __CUT_ON_DESCRIBE_END()                                            \
+# define __CUT_ON_SUITE_END(_suite)                                         \
 {                                                                           \
-                                                                            \
+    if (_suite->status == CUT_SUCCESS)                                      \
+    {                                                                       \
+        printf("\n%sSuite %s%s%s passed successfully.%s\n",                 \
+            COLOR_GREEN, COLOR_NORMAL, _suite->title,                       \
+            COLOR_GREEN, COLOR_NORMAL);                                     \
+    }                                                                       \
+    else                                                                    \
+    {                                                                       \
+        printf("\n%sSuite %s%s%s failed.%s\n",                              \
+            COLOR_RED, COLOR_NORMAL, _suite->title,                         \
+            COLOR_RED, COLOR_NORMAL);                                       \
+    }                                                                       \
 }                                                                           \
 
-# define __CUT_ON_SUITE_START()                                             \
+# define __CUT_ON_DESCRIBE_START(_describe)                                 \
 {                                                                           \
-                                                                            \
+    __CUT_PRINT_DESCRIBE(_describe)                                         \
 }                                                                           \
 
-# define __CUT_ON_SUITE_END()                                               \
+# define __CUT_ON_DESCRIBE_END(_describe)                                   \
 {                                                                           \
-                                                                            \
+}                                                                           \
+
+# define __CUT_ON_IT_START(_it)                                             \
+{                                                                           \
+}                                                                           \
+
+# define __CUT_ON_IT_END(_it)                                               \
+{                                                                           \
+    __CUT_PRINT_IT(_it)                                                     \
+    __CUT_FOR_EACH_CHILD_NODE(_it, __cut_print_node)                        \
+}                                                                           \
+
+# define __CUT_ON_ASSERTION(_assertion)                                     \
+{                                                                           \
 }                                                                           \
 
 
 /*
-**  CUT REPORTER INTERFACE
+**  CUT REPORTER PRIVATE
 */
 
 # define __CUT_PRINT_SUITE(_suite)                                          \
 {                                                                           \
     printf("%sSuite%s %s\n",                                                \
         COLOR_SLATE, COLOR_NORMAL, _suite->title);                          \
-                                                                            \
-    __CUT_PRINT_CHILD_NODES(_suite);                                        \
 }                                                                           \
 
 
@@ -83,10 +105,8 @@
     }                                                                       \
                                                                             \
     printf("%-*s%sDescribe%s %s\n",                                         \
-        (__CUT_INDENT_SIZE * _describe->depth), "", \
+        (__CUT_INDENT_SIZE * _describe->depth), "",                         \
         COLOR_SLATE, COLOR_NORMAL, _describe->title);                       \
-                                                                            \
-    __CUT_PRINT_CHILD_NODES(_describe);                                     \
 }                                                                           \
 
 
@@ -105,8 +125,6 @@
         COLOR_SLATE,                                                        \
         (strlen(_it->title) > __CUT_COL_WIDTH ? "..." : "   "),             \
         COLOR_NORMAL);                                                      \
-                                                                            \
-    __CUT_PRINT_CHILD_NODES(_it);                                           \
 }                                                                           \
 
 
@@ -132,8 +150,8 @@
 
 
 /*
-**  CUT PRIVATE FUNCTIONS
-**  Only print_node is defined as a function because of its recursion
+**  CUT REPORTER PRIVATE FUNCTIONS
+**  Only print_node is defined as a function to permit recursion
 */
 
 void __cut_print_node(__cut_node* _node)
