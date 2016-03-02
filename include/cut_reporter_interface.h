@@ -23,9 +23,10 @@
 
 typedef enum
 {
+    CUT_RUNNING,
     CUT_SUCCESS,
     CUT_FAIL,
-    CUT_SIGSEGV
+    CUT_SIGNAL
 }   __cut_status;
 
 typedef enum
@@ -58,9 +59,7 @@ struct
 **  CUT REPORTER PRIVATE
 */
 
-void __cut_print_node(__cut_node* _node);
-
-# define __CUT_FOR_EACH_CHILD_NODE(_node, _fn)                              \
+# define CUT__FOR_EACH_CHILD_NODE(_node, _fn)                               \
 {                                                                           \
     if (_node->first_child)                                                 \
     {                                                                       \

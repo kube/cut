@@ -19,7 +19,7 @@
 # include "cut_reporter_interface.h"
 
 # ifndef CUT_REPORTER_HEADER
-# define CUT_REPORTER_HEADER "cut_default_reporter.h"
+# define CUT_REPORTER_HEADER "reporters/cut_default_reporter.h"
 # endif
 
 # include CUT_REPORTER_HEADER
@@ -58,31 +58,31 @@
 {                                                                           \
     void _test_suite_ ## _title (void);                                     \
                                                                             \
-    __CUT_APPEND_NEW_NODE(SUITE)                                            \
-    __cut_state.current_node->title = #_title;                              \
-    __cut_state.current_node->status = CUT_SUCCESS;                         \
+    CUT__APPEND_NEW_NODE(SUITE)                                             \
+    CUT__CURRENT_NODE->title = #_title;                                     \
+    CUT__CURRENT_NODE->status = CUT_SUCCESS;                                \
                                                                             \
-    __CUT_ON_SUITE_START(__cut_state.current_node)                          \
+    CUT__ON_SUITE_START(CUT__CURRENT_NODE)                                  \
                                                                             \
     _test_suite_ ## _title ();                                              \
                                                                             \
-    __CUT_ON_SUITE_END(__cut_state.current_node)                            \
-    __CUT_FINISH_CURRENT_NODE()                                             \
+    CUT__ON_SUITE_END(CUT__CURRENT_NODE)                                    \
+    CUT__FINISH_CURRENT_NODE()                                              \
 }                                                                           \
 
 
 # define DESCRIBE(_title, _block)                                           \
 {                                                                           \
-    __CUT_APPEND_NEW_NODE(DESCRIBE)                                         \
-    __cut_state.current_node->title = __CUT_STRDUP(_title);                 \
-    __cut_state.current_node->status = CUT_SUCCESS;                         \
+    CUT__APPEND_NEW_NODE(DESCRIBE)                                          \
+    CUT__CURRENT_NODE->title = CUT__STRDUP(_title);                         \
+    CUT__CURRENT_NODE->status = CUT_SUCCESS;                                \
                                                                             \
-    __CUT_ON_DESCRIBE_START(__cut_state.current_node)                       \
+    CUT__ON_DESCRIBE_START(CUT__CURRENT_NODE)                               \
                                                                             \
     _block                                                                  \
                                                                             \
-    __CUT_ON_DESCRIBE_END(__cut_state.current_node)                         \
-    __CUT_FINISH_CURRENT_NODE()                                             \
+    CUT__ON_DESCRIBE_END(CUT__CURRENT_NODE)                                 \
+    CUT__FINISH_CURRENT_NODE()                                              \
 }                                                                           \
 
 
@@ -94,11 +94,11 @@
     int         pipe_fd[2];                                                 \
     FILE*       pipe_file;                                                  \
                                                                             \
-    __CUT_APPEND_NEW_NODE(IT)                                               \
-    __cut_state.current_node->title = _title;                               \
-    __cut_state.current_node->status = CUT_SUCCESS;                         \
+    CUT__APPEND_NEW_NODE(IT)                                                \
+    CUT__CURRENT_NODE->title = _title;                                      \
+    CUT__CURRENT_NODE->status = CUT_SUCCESS;                                \
                                                                             \
-    __CUT_ON_IT_START(__cut_state.current_node)                             \
+    CUT__ON_IT_START(CUT__CURRENT_NODE)                                     \
                                                                             \
     /* Create a pipe before fork to communicate with child */               \
     pipe(pipe_fd);                                                          \
@@ -116,7 +116,6 @@
                                                                             \
         _block                                                              \
                                                                             \
-        usleep(100);                                                        \
         fclose(pipe_file);                                                  \
         exit(0);                                                            \
     }                                                                       \
@@ -133,9 +132,10 @@
         pipe_buffer = malloc(pipe_buffer_size);                             \
         pipe_file = fdopen(pipe_fd[0], "r");                                \
                                                                             \
+        /* Get failed assertions from child through pipe */                 \
         while (getline(&pipe_buffer, &pipe_buffer_size, pipe_file) != -1)   \
         {                                                                   \
-            __CUT_APPEND_ASSERTION(pipe_buffer, CUT_FAIL)                   \
+            CUT__APPEND_ASSERTION(pipe_buffer, CUT_FAIL)                    \
         }                                                                   \
                                                                             \
         waitpid(child_process, &child_status, 0);                           \
@@ -143,20 +143,17 @@
         /* Child was killed by signal */                                    \
         if (WIFSIGNALED(child_status))                                      \
         {                                                                   \
-            switch (WTERMSIG(child_status))                                 \
-            {                                                               \
-                case SIGSEGV:                                               \
-                    __cut_state.current_node->status = CUT_SIGSEGV;         \
-                    __CUT_APPEND_ASSERTION("Unexpected SIGSEGV\n",          \
-                        CUT_SIGSEGV)                                        \
-                    break;                                                  \
-            }                                                               \
+            int signal = WTERMSIG(child_status);                            \
+            char* message = NULL;                                           \
+                                                                            \
+            asprintf(&message, "Unexpected %s\n", strsignal(signal));       \
+            CUT__APPEND_ASSERTION(message, CUT_SIGNAL);                     \
         }                                                                   \
                                                                             \
         fclose(pipe_file);                                                  \
     }                                                                       \
-    __CUT_ON_IT_END(__cut_state.current_node)                               \
-    __CUT_FINISH_CURRENT_NODE()                                             \
+    CUT__ON_IT_END(CUT__CURRENT_NODE)                                       \
+    CUT__FINISH_CURRENT_NODE()                                              \
 }                                                                           \
 
 
@@ -215,52 +212,52 @@
 **  CUT PRIVATE MACROS
 */
 
-# define __CUT_ALLOC(_size)                                                 \
+# define CUT__CURRENT_NODE                                                  \
+    (__cut_state.current_node)                                              \
+
+# define CUT__ALLOC(_size)                                                  \
     (memset(malloc(_size), 0, _size))                                       \
 
-
-# define __CUT_FREE(_pointer))                                              \
+# define CUT__FREE(_pointer))                                               \
     (free(_pointer))                                                        \
 
+# define CUT__NEW(_type)                                                    \
+    (CUT__ALLOC(sizeof(__cut_ ## _type)))                                   \
 
-# define __CUT_NEW(_type)                                                   \
-    (__CUT_ALLOC(sizeof(__cut_ ## _type)))                                  \
-
-
-# define __CUT_STRDUP(_str)                                                 \
-    (strcpy(__CUT_ALLOC(strlen(_str)), _str))                               \
+# define CUT__STRDUP(_str)                                                  \
+    (strcpy(CUT__ALLOC(strlen(_str)), _str))                                \
 
 
 // Append a new child node to current_node
 // And set it as the new current_node
-# define __CUT_APPEND_NEW_NODE(_type)                                       \
+# define CUT__APPEND_NEW_NODE(_type)                                        \
 {                                                                           \
     __cut_node*    new_node;                                                \
                                                                             \
-    new_node = __CUT_NEW(node);                                             \
+    new_node = CUT__NEW(node);                                              \
     new_node->type = CUT_ ## _type;                                         \
                                                                             \
     /* No current_node, set new_node as root */                             \
-    if (!__cut_state.current_node)                                          \
+    if (!CUT__CURRENT_NODE)                                                 \
     {                                                                       \
-        __cut_state.current_node = new_node;                                \
+        CUT__CURRENT_NODE = new_node;                                       \
         new_node->depth = 0;                                                \
     }                                                                       \
     /* current_node has no child, set new_node as first child */            \
-    else if (!__cut_state.current_node->first_child)                        \
+    else if (!CUT__CURRENT_NODE->first_child)                               \
     {                                                                       \
-        __cut_state.current_node->first_child = new_node;                   \
-        new_node->parent_node = __cut_state.current_node;                   \
-        __cut_state.current_node = new_node;                                \
+        CUT__CURRENT_NODE->first_child = new_node;                          \
+        new_node->parent_node = CUT__CURRENT_NODE;                          \
+        CUT__CURRENT_NODE = new_node;                                       \
         new_node->parent_node->last_child = new_node;                       \
         new_node->depth = new_node->parent_node->depth + 1;                 \
     }                                                                       \
     /* current_node has child, set new_node as last child */                \
     else                                                                    \
     {                                                                       \
-        __cut_state.current_node->last_child->next_sibling = new_node;      \
-        new_node->parent_node = __cut_state.current_node;                   \
-        __cut_state.current_node = new_node;                                \
+        CUT__CURRENT_NODE->last_child->next_sibling = new_node;             \
+        new_node->parent_node = CUT__CURRENT_NODE;                          \
+        CUT__CURRENT_NODE = new_node;                                       \
         new_node->parent_node->last_child = new_node;                       \
         new_node->depth = new_node->parent_node->depth + 1;                 \
     }                                                                       \
@@ -268,13 +265,13 @@
 
 
 // Set current_node back to its parent
-# define __CUT_FINISH_CURRENT_NODE()                                        \
+# define CUT__FINISH_CURRENT_NODE()                                         \
 {                                                                           \
-    __cut_state.current_node = __cut_state.current_node->parent_node;       \
+    CUT__CURRENT_NODE = CUT__CURRENT_NODE->parent_node;                     \
 }                                                                           \
 
 
-# define __CUT_SET_PARENTS_FAIL(_node)                                      \
+# define CUT__SET_PARENTS_FAIL(_node)                                       \
 {                                                                           \
     __cut_node* node;                                                       \
                                                                             \
@@ -287,14 +284,16 @@
 }                                                                           \
 
 
-# define __CUT_APPEND_ASSERTION(_title, _status)                            \
+# define CUT__APPEND_ASSERTION(_title, _status)                             \
 {                                                                           \
-    __CUT_APPEND_NEW_NODE(ASSERTION)                                        \
-    __cut_state.current_node->title = __CUT_STRDUP(_title);                 \
-    __cut_state.current_node->status = _status;                             \
-    __CUT_SET_PARENTS_FAIL(__cut_state.current_node)                        \
-    __CUT_ON_ASSERTION(__cut_state.current_node)                            \
-    __CUT_FINISH_CURRENT_NODE()                                             \
+    CUT__APPEND_NEW_NODE(ASSERTION)                                         \
+    CUT__SET_PARENTS_FAIL(CUT__CURRENT_NODE)                                \
+                                                                            \
+    CUT__CURRENT_NODE->title = CUT__STRDUP(_title);                         \
+    CUT__CURRENT_NODE->status = _status;                                    \
+                                                                            \
+    CUT__ON_ASSERTION(CUT__CURRENT_NODE)                                    \
+    CUT__FINISH_CURRENT_NODE()                                              \
 }                                                                           \
 
 #endif

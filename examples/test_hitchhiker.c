@@ -20,6 +20,6 @@ SUITE(hello, {
     DESCRIBE("deep_thought", {
 
         IT("returns meaning of life",
-            ASSERT(deep_thought() == 36))
+            ASSERT(deep_thought() == 42))
     })
 })

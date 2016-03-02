@@ -8,6 +8,12 @@
      ## ## ## :##
       ## ## ##*/
 
+/*
+**  Cut Testing for 42 libft
+**  Rework of OpenTester tests by Nax
+**  https://github.com/OpenFT/OpenTester
+*/
+
 ///CUTRUN:LINK_LIBRARY      ft
 
 #include "cut_framework.h"
@@ -139,13 +145,13 @@ SUITE(libft, {
 
     DESCRIBE("ft_strlen", {
 
+        IT("returns zero when empty string",
+            ASSERT(ft_strlen("") == 0))
+
         IT("returns 4 on a string of length 4",
             ASSERT(ft_strlen("chat") == 4))
 
-        IT("should return zero when empty string",
-            ASSERT(ft_strlen("") != 0))
-
-        IT("should return 5 on a string of length 5",
+        IT("returns 5 on a string of length 5",
             ASSERT(ft_strlen("abcde") == 5))
     })
 
@@ -356,5 +362,210 @@ SUITE(libft, {
 
         IT("returns nonzero on different strings",
             ASSERT(ft_strncmp("ab\0cde", "abcc\0e", 20) != 0))
+    })
+
+    DESCRIBE("ft_atoi", {
+        IT("returns 0 on non numerical string",
+            ASSERT(ft_atoi(" -sfecf") == 0))
+
+        IT("handles +",
+            ASSERT(ft_atoi("+2798") == 2798))
+
+        IT("handles whitespaces",
+            ASSERT(ft_atoi("  \t\n  \r\r\v\f-899") == -899))
+
+        IT("handles trailing zeroes",
+            ASSERT(ft_atoi("+0089") == 89))
+
+        IT("handles minimum integer",
+            ASSERT(ft_atoi("-2147483648") == -2147483648))
+
+        IT("stops on first non numerical char",
+            ASSERT(ft_atoi("a56") == 0))
+
+        IT("stops on whitespace",
+            ASSERT(ft_atoi("    555 5555555555555555") == 555))
+    })
+
+    DESCRIBE("ft_isalpha", {
+
+        IT("returns true on 'a'",
+            ASSERT(ft_isalpha('a')))
+
+        IT("returns false on non ASCII",
+            ASSERT(!ft_isalpha('a' + 0x100)))
+
+        IT("returns false on '2'",
+            ASSERT(!ft_isalpha('2')))
+
+        IT("returns true on 'Z'",
+            ASSERT(ft_isalpha('Z')))
+
+        IT("returns true on 't'",
+            ASSERT(ft_isalpha('t')))
+    })
+
+    DESCRIBE("ft_isdigit", {
+
+        IT("returns false on NUL",
+            ASSERT(!ft_isdigit(0)))
+
+        IT("returns true on '8'",
+            ASSERT(ft_isdigit('8')))
+
+        IT("returns false on non-ASCII",
+            ASSERT(!ft_isdigit('8' + 0x100)))
+    })
+
+    DESCRIBE("ft_isalnum", {
+
+        IT("returns false on space",
+            ASSERT(!ft_isalnum(' ')))
+
+        IT("returns true on '6'",
+            ASSERT(ft_isalnum('6')))
+
+        IT("returns true on 'Z'",
+            ASSERT(ft_isalnum('Z')))
+
+        IT("returns false on non-ASCII",
+            ASSERT(!ft_isalnum('5' + 0x100)))
+    })
+
+    DESCRIBE("ft_isascii", {
+
+        IT("returns false on non-ASCII",
+            ASSERT(!ft_isascii(200)))
+
+        IT("returns true on NUL",
+            ASSERT(ft_isascii(0)))
+
+        IT("returns true on DEL",
+            ASSERT(ft_isascii(127)))
+    })
+
+    DESCRIBE("ft_isprint", {
+
+        IT("returns false on NUL",
+            ASSERT(!ft_isprint(0)))
+
+        IT("returns false on DEL",
+            ASSERT(!ft_isprint(127)))
+
+        IT("returns true on space",
+            ASSERT(ft_isprint(' ')))
+
+        IT("returns true on 'a'",
+            ASSERT(ft_isprint('a')))
+
+        IT("returns true on '~'",
+            ASSERT(ft_isprint('~')))
+    })
+
+    DESCRIBE("ft_toupper", {
+
+        IT("maps 'a' to 'A'",
+            ASSERT(ft_toupper('a') == 'A'))
+
+        IT("maps 12345 to 12345",
+            ASSERT(ft_toupper(12345) == 12345))
+
+        IT("maps space to space",
+            ASSERT(ft_toupper(' ') == ' '))
+
+        IT("maps 'Z' to 'Z'",
+            ASSERT(ft_toupper('Z') == 'Z'))
+
+        IT("maps 'z' to 'Z'",
+            ASSERT(ft_toupper('z') == 'Z'))
+    })
+
+    DESCRIBE("ft_tolower", {
+
+        IT("maps 'T' to 't'",
+            ASSERT(ft_tolower('T') == 't'))
+
+        IT("maps 99999 to 99999",
+            ASSERT(ft_tolower(99999) == 99999))
+
+        IT("maps 'e' to 'e'",
+            ASSERT(ft_tolower('e') == 'e'))
+
+        IT("maps 'Z' to 'z'",
+            ASSERT(ft_tolower('Z') == 'z'))
+    })
+
+    DESCRIBE("ft_memalloc", {
+        void    *mem1;
+        void    *mem2;
+
+        mem1 = malloc(100);
+        bzero(mem1, 100);
+        mem2 = ft_memalloc(100);
+
+        IT("allocates a 100 byte blob filled with zeroes",
+            ASSERT(memcmp(mem1, mem2, 100) == 0))
+
+        IT("returns NULL on size 0",
+            ASSERT(ft_memalloc(0) == 0))
+
+        IT("returns NULL on allocation error",
+            ASSERT(ft_memalloc((size_t)-1) == 0))
+    })
+
+    DESCRIBE("ft_memdel", {
+        void    *mem;
+
+        mem = malloc(2000);
+        ft_memdel(&mem);
+
+        IT("sets the freed pointer to NULL",
+            ASSERT(mem == 0))
+    })
+
+    DESCRIBE("ft_strnew", {
+        char    *str;
+        char    *t;
+
+        IT("creates an empty string",
+            ASSERT(ft_strnew(0) != NULL))
+
+        IT("creates a 101 bytes blob filled with zeroes", {
+            str = ft_strnew(100);
+            t = malloc(101);
+            bzero(t, 101);
+
+            ASSERT(memcmp(str, t, 101) == 0)
+        })
+
+        IT("returns NULL on error",
+            ASSERT(ft_strnew((size_t)-10) == NULL))
+    })
+
+    DESCRIBE("ft_strdel", {
+        char    *str;
+
+        IT("sets the freed pointer to NULL", {
+            str = malloc(123);
+            ft_strdel(&str);
+
+            ASSERT(str == 0)
+        })
+    })
+
+    DESCRIBE("ft_strclr", {
+        char    str[] = "tttttt";
+
+        IT("clears a string of length 7", {
+            ft_strclr(str);
+            ASSERT(memcmp(str, "\0\0\0\0\0\0", 7) == 0)
+        })
+    })
+
+    DESCRIBE("ft_striter", {
+        char    str[] = "aBcDeF";
+
+        ft_striter(str, it_test);
+        ASSERT(strcmp(str, "bCdEfG"), "should iterate a function") == 0)
     })
 })
