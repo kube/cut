@@ -57,7 +57,7 @@ const parseArguments = (args: string[]): Options =>
     when(true)
       .is(options.flagToComplete !== undefined, () =>
         compose(
-          opts =>
+          (opts: Options) =>
             set(opts, _ => _.flagToComplete)(undefined),
 
           (opts: Options) =>
