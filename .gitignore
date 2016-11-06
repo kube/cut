@@ -1,1 +1,4 @@
 .cutrun_objects
+node_modules
+build
+npm-debug.log

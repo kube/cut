@@ -1,0 +1,20 @@
+{
+  "name": "cutrun",
+  "version": "0.0.1",
+  "description": "C Unit Testing Runner",
+  "main": "build/cutrun.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Chris Feijoo",
+  "license": "MIT",
+  "dependencies": {
+    "monolite": "^0.1.0",
+    "ramda": "^0.22.1",
+    "when-switch": "^0.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^6.0.46",
+    "@types/ramda": "0.0.2"
+  }
+}
