@@ -9,6 +9,9 @@
       ## ## ##*/
 
 import { set } from 'monolite'
+import { join } from 'path'
+
+const CUT_FOLDER = join(__dirname, '../..')
 
 export type Context = {
   files: string[],
@@ -54,7 +57,7 @@ export const setOnlyExpandMacros = (context: Context) =>
 export const createContext = () => ({
   files: [],
   libraries: [],
-  includePath: [],
+  includePath: [join(CUT_FOLDER, 'include')],
   libraryPath: [],
   outFolder: './.cutrun_objects/',
   reporter: 'default',

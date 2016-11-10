@@ -9,16 +9,9 @@
   "author": "Chris Feijoo",
   "license": "MIT",
   "dependencies": {
-    "@types/bluebird": "^3.0.35",
-    "bluebird": "^3.4.6",
-    "monolite": "^0.1.1",
-    "ramda": "^0.22.1",
-    "when-switch": "^0.1.1"
+    "commander": "^2.9.0"
   },
   "devDependencies": {
-    "@types/mkdirp": "^0.3.29",
-    "@types/node": "^6.0.46",
-    "@types/ramda": "0.0.2",
-    "mkdirp": "^0.5.1"
+    "@types/commander": "^2.3.30"
   }
 }
