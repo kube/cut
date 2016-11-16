@@ -1,6 +1,7 @@
 
-#![Cut](./images/cut.png)
-##C Unit Testing Framework
+# ![Cut](https://cdn.rawgit.com/kube/cut/master/images/cut.svg)
+
+## C Unit Testing Framework
 
 
 Cut is a simple C Unit Testing Framework composed by a bunch of macros in a single header file. Its syntax is inpired by Node testing framework Mocha.
@@ -16,11 +17,11 @@ SUITE(hitchhiker, {
 
 ```
 
-###Syntax
+### Syntax
 
 
 
-###Signals
+### Signals
 Cut will catch signals thrown during execution of each *it* block. If an unexpected signal appears, the block status will be passed to the signal name.
 
 ```
@@ -44,12 +45,13 @@ Describe Marvin
     It segfaults when asked to be happy [OK]
 ```
 
-##CutRun
+## CutRun
 **CutRun** is a simple tool that will permit you to run your tests easily without having to create a Makefile or call the compiler from the command-line. It will handle everything for you.
 
 ![CutRun](./images/cutrun.png)
 
-###Directives
+
+### Directives
 
 All compilation properties are passed to CutRun through a simple set of directives, directly in the test source file:
 
@@ -71,7 +73,8 @@ You can also pass these directives directly to `cutrun` executable:
 cutrun tests/hashmap.c -I../include -L../ -lft
 ```
 
-###Installation
+
+### Installation
 
 ```
 git clone git@github.com:kube/cut
