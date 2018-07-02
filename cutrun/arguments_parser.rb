@@ -61,6 +61,10 @@ module ArgumentsParser
             puts CutRun::VERSION
             exit
 
+          when '--print-include-path'
+            puts File.expand_path('../include', $__CUTRUN_FOLDER__)
+            exit
+
           when '--print-install-path'
             puts File.expand_path('..', $__CUTRUN_FOLDER__)
             exit
