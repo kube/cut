@@ -27,7 +27,7 @@ fi
 if [ "$1" == "remote" ];
 then
     # Install from Github repository
-    git clone --depth=1 https://github.com/kube/cut /usr/local/share
+    git clone --depth=1 https://github.com/kube/cut /usr/local/share/cut
     ln -s /usr/local/share/cut/cutrun/cutrun.rb /usr/local/bin/cutrun
 else
     # Install from local clone
