@@ -562,10 +562,10 @@ SUITE(libft, {
         })
     })
 
-    DESCRIBE("ft_striter", {
-        char    str[] = "aBcDeF";
+    // DESCRIBE("ft_striter", {
+    //     char    str[] = "aBcDeF";
 
-        ft_striter(str, it_test);
-        ASSERT(strcmp(str, "bCdEfG"), "should iterate a function") == 0)
-    })
+    //     ft_striter(str, it_test);
+    //     ASSERT(strcmp(str, "bCdEfG"), "should iterate a function") == 0)
+    // })
 })
