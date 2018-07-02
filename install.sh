@@ -10,8 +10,21 @@
 
 HERE=$(cd $(dirname "$0");pwd)
 
+# Check if Cutrun is currently installed
+if [ $(command -v cutrun) ];
+then
+    echo "ERROR: Cutrun already installed at '$(cutrun --print-install-path)'."
+    echo "       To uninstall, run:"
+    echo '       rm -rf $(cutrun --print-install-path) $(which cutrun)'
+    exit 1
+else
+    # Remove potentially broken symlink
+    rm -rf /usr/local/bin/cutrun
+fi
+
+
 # Check if `remote` argument was passed to the script
-if [ "$1" = "remote"];
+if [ "$1" == "remote" ];
 then
     # Install from Github repository
     git clone --depth=1 git@github.com:kube/cut /usr/local/share
@@ -22,3 +35,9 @@ else
 fi
 
 
+# Check that Cutrun was successfully installed
+if [ $(command -v cutrun) ];
+    echo "Cutrun successfully installed at $(cutrun --print-install-path)"
+else
+    echo "Error during installation"
+fi

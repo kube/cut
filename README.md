@@ -79,6 +79,5 @@ curl -fsSL https://rawgit.com/kube/cut/master/install.sh | sh -s remote
 ### Uninstall
 
 ```
-rm -rf $(cutrun --print-install-path)
-rm -rf $(which cutrun)
+rm -rf $(cutrun --print-install-path) $(which cutrun)
 ```
