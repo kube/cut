@@ -58,9 +58,9 @@ All compilation properties are passed to CutRun through a simple set of directiv
 ///CUTRUN:INCLUDE_FOLDER    ../include
 
 SUITE(hello {
-	DESCRIBE("world", {
-		...
-	})
+    DESCRIBE("world", {
+        ...
+    })
 })
 ```
 
