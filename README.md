@@ -3,33 +3,30 @@
 
 ## C Unit Testing Framework
 
-
 Cut is a simple C Unit Testing Framework composed by a bunch of macros in a single header file. Its syntax is inpired by Node testing framework Mocha.
-
 
 ```c
 SUITE(hitchhiker, {
     DESCRIBE("Deep Thought", {
-        IT("returns meaning of life",
-            ASSERT(deep_thought() == 42))
+        IT("returns meaning of life", {
+            ASSERT(deep_thought() == 42)
+        })
     })
 })
 
 ```
 
-### Syntax
-
-
-
 ### Signals
-Cut will catch signals thrown during execution of each *it* block. If an unexpected signal appears, the block status will be passed to the signal name.
+Cut will catch signals thrown during execution of each *it* block.
+If an unexpected signal appears, the block status will be passed to the signal name.
 
 ```
 Describe Marvin
     It segfaults when asked to be happy [SIGSEGV]
 ```
 
-But sometimes, you will expect this behaviour. In this case, simply use an `EXPECT_SIGNAL` wrapper :
+But sometimes, you will expect this behaviour.
+In this case, simply use an `EXPECT_SIGNAL` wrapper :
 
 ```c
 IT("segfaults when asked to be happy", {
