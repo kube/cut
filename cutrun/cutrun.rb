@@ -16,6 +16,10 @@ $__CUTRUN_FOLDER__ = File.dirname(
 # Set cutrun folder as loadpath
 $:.unshift $__CUTRUN_FOLDER__
 
+module CutRun
+  VERSION = "0.0.0a"
+end
+
 require 'arguments_parser'
 require 'context'
 

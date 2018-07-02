@@ -57,6 +57,10 @@ module ArgumentsParser
         flag = get_flag_name argument
 
         case get_complete_flag_name flag
+          when '--version'
+            puts CutRun::VERSION
+            exit
+
           when '--print-install-path'
             puts File.expand_path('..', $__CUTRUN_FOLDER__)
             exit
