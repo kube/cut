@@ -74,10 +74,14 @@ cutrun tests/hashmap.c -I../include -L../ -lft
 ```
 
 
-### Installation
+### Install
+```
+curl -fsSL https://rawgit.com/kube/cut/master/install.sh | sh -s remote
+```
+
+### Uninstall
 
 ```
-git clone git@github.com:kube/cut
-cd cut
-make install
+rm -rf $(cutrun --print-install-path)
+rm -rf $(which cutrun)
 ```
