@@ -41,4 +41,5 @@ then
     echo "Cutrun successfully installed at $(cutrun --print-install-path)"
 else
     echo "Error during installation"
+    exit 1
 fi
